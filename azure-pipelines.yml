@@ -19,4 +19,17 @@ steps:
     inputs:
       PathtoPublish: 'target'
       ArtifactName: 'springboot-app'
-      publishLocation: 'Container'
+
+
+  - script: |
+      docker build -t $(dockerHubUsername)/$(imageName):latest .
+    displayName: 'Build Docker Image'
+
+  - script: |
+      echo $(dockerPassword) | docker login -u $(dockerHubUsername) --password-stdin
+    displayName: 'Docker Login'
+
+  - script: |
+      docker push $(dockerHubUsername)/$(imageName):latest
+    displayName: 'Push Docker Image'
+
