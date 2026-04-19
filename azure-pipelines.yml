@@ -5,24 +5,26 @@ pool:
   name: Default
 
 steps:
-  # Build + Test
+
+  - task: MavenAuthenticate@0
+    inputs:
+      artifactsFeeds: 'newFeed'
+
   - task: Maven@3
     inputs:
       mavenPomFile: 'pom.xml'
       mavenOptions: '-Xmx3072m'
-      goals: 'clean install'
+      goals: 'clean deploy'
       publishJUnitResults: true
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
 
-  # Publish JAR artifact
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: 'target'
       ArtifactName: 'springboot-app'
 
-
   - script: |
-      docker build -t $(dockerHubUsername)/$(imageName):latest .
+      docker build -t $(dockerHubUsername)/$(imageName):$(Build.BuildId) .
     displayName: 'Build Docker Image'
 
   - script: |
@@ -30,6 +32,5 @@ steps:
     displayName: 'Docker Login'
 
   - script: |
-      docker push $(dockerHubUsername)/$(imageName):latest
+      docker push $(dockerHubUsername)/$(imageName):$(Build.BuildId)
     displayName: 'Push Docker Image'
-
